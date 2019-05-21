@@ -1,0 +1,258 @@
+<!Doctype html>
+<html>
+<head>
+	<title>Round Robin Process Scheduling</title>
+	<style>
+	table.gantt{
+		border: 0px solid black;
+	}
+	.process th{
+		border: 2px solid black;
+	}
+	table.process{
+		border-collapse: collapse;
+		border: 2px solid black;
+	}
+	tr.noBorder td {
+		border: 0;
+	}
+	</style>
+</head>
+<body>
+<?php
+// $e=array("w","r");
+// for($i=0;$i<count($e);$i++){
+//     echo $e[$i];}
+$A1=$_GET["A1"];// GET ARRIVAL TIMES
+$B1=$_GET["B1"];
+$C1=$_GET["C1"];
+$D1=$_GET["D1"];
+$E1=$_GET["E1"];
+
+$A2=$_GET["A2"];  // GET BURST TIMES
+$B2=$_GET["B2"];
+$C2=$_GET["C2"];
+$D2=$_GET["D2"];
+$E2=$_GET["E2"];
+$q=$_GET["quantum"];
+$processQ=array();
+$arrivalTimes=array($A1,$B1,$C1,$D1,$E1);
+for($i=0;$i<5;$i++){
+    if(($arrivalTimes[$i])==null){
+        $arrivalTimes[$i]=0;
+    }
+    else $arrivalTimes[$i]=(int)$arrivalTimes[$i];
+}
+// for($i=0;$i<count($arrivalTimes);$i++){
+// echo $arrivalTimes[$i];}
+
+$remainingTimes=array($A2,$B2,$C2,$D2,$E2);
+$burstTimes=$remainingTimes;
+for($i=0;$i<5;$i++){
+    if(($remainingTimes[$i])==null){
+        $remainingTimes[$i]=0;
+    }
+    else $remainingTimes[$i]=(int)$remainingTimes[$i];
+}
+$burstTimes=$remainingTimes;
+$time=0;
+$total=$remainingTimes[0]+$remainingTimes[1]+$remainingTimes[2]+$remainingTimes[3]+$remainingTimes[4];
+$timePassProcess=5;
+$timePass=0; // assume that the process has arrived
+while ($time< ($total)){// check all processes have executed
+    for($i=0;$i<5;$i++){  // go through all processes 
+        // echo $i;
+        if($time>=$arrivalTimes[$i] & $remainingTimes[$i]!=0){ //check whether particular process has arrived 
+            if($timePass==1){
+                $timePass=0;
+                $timePassProcess=5;
+            }    
+                // if($timePass==true) {
+                //     $timePass=false;
+                // }    
+                
+                if($remainingTimes[$i]==0){ // this process is already completed
+                    continue;
+                }
+                else if($remainingTimes[$i]>=$q){
+                    $remainingTimes[$i]=$remainingTimes[$i]-$q;
+                    $time+=$q;
+                    array_push($processQ, array($i+1,$q));
+                }
+                else{
+                    $time+=$remainingTimes[$i];
+                    array_push($processQ, array($i+1,$remainingTimes[$i])); // execute this process
+                    $remainingTimes[$i]=0; // this process just completed
+                }
+        }
+        else{
+            if($timePass==1){
+                if($timePassProcess==$i){
+                    $time++; // there has no proccess in the queue during this second. No proccess execution. 
+                    $total++;
+                    array_push($processQ, array(0,1)); 
+                    $timePass=0;
+                }
+            }
+            else{
+                $timePassProcess=$i;
+                // echo $i;
+                $timePass=1;
+            }
+        } 
+    }
+
+}
+
+?>
+
+<table class="gantt" border='0'  style="width:50%;hight:5000px">
+<caption> <h2>Gantt Chart</h2> </caption>
+<thead>
+    <tr>
+    <th scope="col" style="width:0.1%; background-color:white" height="30"></th>
+    <?php for ($p=0; $p<count($processQ); $p++):?>
+            <?php
+            $length=$processQ[$p][1]."%";
+            if($processQ[$p][0]==0){ 
+                $colorr="white";
+            }
+            if($processQ[$p][0]==1){ 
+                $colorr="blue";
+            }
+            if($processQ[$p][0]==2){ 
+                $colorr="#FAFA00"; //yellow
+            }
+            if($processQ[$p][0]==3){ 
+                $colorr="red";
+            }
+            if($processQ[$p][0]==4){ 
+                // echo "ee".$p;
+                $colorr="#00FA0B"; //green
+            }
+            if($processQ[$p][0]==5){ 
+                $colorr="#FA00EB"; //purple
+            }
+            ?>
+        <th scope="col" style="width:<?=$length?>; background-color:<?=$colorr?>" height="30"></th>  
+    
+    <?php endfor?>
+
+
+    </tr>
+
+    <tr>
+    <th scope="col" style="width:0.1%; background-color:white;text-align:right" height="30">0</th>
+        <?php $time=0?>
+    <?php for ($p=0; $p<count($processQ); $p++):?>
+            <?php
+            $length=$processQ[$p][1]."%";
+            $time+=$processQ[$p][1];
+            ?>
+        <th scope="col" style="width:<?=$length?>;text-align:right" height="30"><?php if($p!=(count($processQ)-1)){ if($processQ[$p][0]!=$processQ[$p+1][0]){ echo $time;}} else echo $time;?></th>  
+    
+    <?php endfor?>
+    
+    
+    </thead>
+    </table>
+
+    <?php 
+
+
+    $waitingTmes=array(0,0,0,0,0);
+    for($p=0;$p<count($processQ);$p++){ // each process
+        if($processQ[$p][0]==0) {continue;}
+        for($i=$p-1;$i>=0;$i--){   // go back for calculating waiting time
+            if($processQ[$p][0]==$processQ[$i][0]){
+                break;
+            }
+            else{
+
+                $waitingTmes[$processQ[$p][0]-1]=$waitingTmes[$processQ[$p][0]-1]+$processQ[$i][1]; //update waiting time
+            }
+        }
+    }
+    //subtract arrival time of each process
+    $turnarrTimes=array();
+    $numOfProcesses=0;
+    for($p=0;$p<5;$p++){
+        $waitingTmes[$p]=$waitingTmes[$p]-$arrivalTimes[$p];
+        if($burstTimes[$p]==0){
+            $arrivalTimes[$p]=null;
+            array_push($turnarrTimes,null);
+            $burstTimes[$p]=null;
+            $waitingTmes[$p]=null;
+        }
+        else{
+            array_push($turnarrTimes,$waitingTmes[$p]+$burstTimes[$p]);
+            $numOfProcesses++;
+        }
+    }
+
+
+
+    ?>
+   <br><br><br><br>
+        <table id="example" class="display" background-color: red style="width:40%">
+    
+            <thead>
+        <tr>
+            <th>Process</th>
+            <th>Arrival Time</th>
+            <th>Burst Time</th>
+            <th>Waiting Time</th>
+            <th>Turnaround Time</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="background-color: blue  "   align= "center">A<br></td>
+            <td align="center"><?php echo $arrivalTimes[0];?></td>
+            <td align="center"><?php echo $burstTimes[0];?></td>
+            <td align="center"><?php echo $waitingTmes[0];?></td>
+            <td align="center"><?php echo $turnarrTimes[0];?></td>
+        
+        </tr>
+        <tr>
+            <td style="background-color: #FAFA00  " align= "center">B<br></td>
+            <td align="center"><?php echo $arrivalTimes[1];?></td>
+            <td align="center"><?php echo $burstTimes[1];?></td>
+            <td align="center"><?php echo $waitingTmes[1];?></td>
+            <td align="center"><?php echo $turnarrTimes[1];?></td>
+        </tr>
+        <tr> 
+            <td style="background-color: red  " align= "center">C<br></td>
+            <td align="center"><?php echo $arrivalTimes[2];?></td>
+            <td align="center"><?php echo $burstTimes[2];?></td>
+            <td align="center"><?php echo $waitingTmes[2];?></td>
+            <td align="center"><?php echo $turnarrTimes[2];?></td>
+        </tr>
+        <tr>
+            <td style="background-color: #00FA0B  " align= "center">D<br></td>
+            <td align="center"><?php echo $arrivalTimes[3];?></td>
+            <td align="center"><?php echo $burstTimes[3];?></td>
+            <td align="center"><?php echo $waitingTmes[3];?></td>
+            <td align="center"><?php echo $turnarrTimes[3];?></td>
+        </tr>
+        <tr>
+            <td style="background-color: #FA00EB  " align= "center">E<br></td>
+            <td align="center"><?php echo $arrivalTimes[4];?></td>
+            <td align="center"><?php echo $burstTimes[4];?></td>
+            <td align="center"><?php echo $waitingTmes[4];?></td>
+            <td align="center"><?php echo $turnarrTimes[4];?></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td ></td>
+            <td></td>
+            <td align="center">Average: <?php echo ($waitingTmes[0]+$waitingTmes[1]+$waitingTmes[2]+$waitingTmes[3]+$waitingTmes[4])/$numOfProcesses;?></td>
+            <td align="center">Average: <?php echo ($turnarrTimes[0]+$turnarrTimes[1]+$turnarrTimes[2]+$turnarrTimes[3]+$turnarrTimes[4])/$numOfProcesses;?></td>
+        </tr>
+        </tbody>
+    </table>
+
+
+</body>
+</html>
