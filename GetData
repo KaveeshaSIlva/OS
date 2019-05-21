@@ -1,0 +1,49 @@
+<html>
+    <head>
+    <form action="process.php" method="get">
+
+         <div>Time Quantum :<input type="text" name="quantum"style="width:5%"></div><br>
+        <table id="example" class="display" background-color: red style="width:40%">
+    
+            <thead>
+        <tr>
+            <th>Process</th>
+            <th>Arrival Time</th>
+            <th>Burst Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="background-color: blue  "   align= "center">A<br></td>
+            <td><input type="text" name="A1"><br></td>
+            <td><input type="text" name="A2"><br></td>
+        </tr>
+        <tr>
+            <td style="background-color: #FAFA00  " align= "center">B<br></td>
+            <td><input type="text" name="B1"><br></td>
+            <td><input type="text" name="B2"><br></td>
+        </tr>
+        <tr> 
+            <td style="background-color: red  " align= "center">C<br></td>
+            <td><input type="text" name="C1"><br></td>
+            <td><input type="text" name="C2"><br></td>
+        </tr>
+        <tr>
+            <td style="background-color: #00FA0B  " align= "center">D<br></td>
+            <td><input type="text" name="D1"><br></td>
+            <td><input type="text" name="D2"><br></td>
+        </tr>
+        <tr>
+            <td style="background-color: #FA00EB  " align= "center">E<br></td>
+            <td><input type="text" name="E1"><br></td>
+            <td><input type="text" name="E2"><br></td>
+        </tr>
+        </tbody>
+    </table>
+    <br><br>
+    <input type="submit">
+    </form>
+    </head>
+</html>
+        
+        
